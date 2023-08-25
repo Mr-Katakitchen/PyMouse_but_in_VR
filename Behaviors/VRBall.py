@@ -1,5 +1,6 @@
 from core.Behavior import *
-from Interfaces.Ball import *
+from Interfaces.Ball import Ball
+
 
 
 @behavior.schema
@@ -48,16 +49,21 @@ class VRBall(Behavior, dj.Manual):
         self.previous_loc = [0, 0]
         self.curr_loc = [0, 0]
         super(VRBall, self).setup(exp)
-        self.vr = Ball(exp)
+        print("config id  =   ", exp.params['setup_conf_idx'])
+        if exp.params['setup_conf_idx'] == 3:
+            self.vr = Ball(exp)
+        elif exp.params['setup_conf_idx'] == 12:
+            self.vr = self.interface
+        else:
+            print("What is your interface???")
 
     def prepare(self, condition):
         self.in_position_flag = False
         if condition['x0'] < 0 or condition['y0'] < 0:
             x0, y0, theta0, time = self.vr.getPosition()
-            self.vr.setPosition(condition['x_sz'], condition['y_sz'], x0, y0, theta0)
+            self.vr.setPosition(x0, y0, theta0)
         else:
-            self.vr.setPosition(condition['x_sz'], condition['y_sz'], condition['x0'], condition['y0'],
-                                condition['theta0'])
+            self.vr.setPosition(condition['x0'], condition['y0'], condition['theta0'])
         super().prepare(condition)
 
     def is_ready(self):
@@ -85,7 +91,7 @@ class VRBall(Behavior, dj.Manual):
 
     def get_position(self):
         return self.vr.getPosition()
-
+        
     def reward(self):
         self.interface.give_liquid(self.response.port)
         self.log_reward(self.reward_amount[self.response.port])
